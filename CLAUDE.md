@@ -39,6 +39,7 @@ A single-file IT PMO Kanban board for a **fictitious "Demo Bank"**, used as an i
 - Both are deployed: v1 at the Pages root, v2 at `/v2/`. **Leave v1 unchanged**; new work goes into `v2/index.html`. Every rule in this file applies to both files, and CI checks both.
 - v2 adds a dark theme: colour tokens on `:root` are redefined under `:root[data-theme="dark"]` and under `@media (prefers-color-scheme: dark)` with `:root:not([data-theme="light"])`. Keep the two dark blocks identical. The toggle choice is `uiState.theme` (in memory only; `null` follows the OS).
 - v2 has a CSP `<meta>` (`connect-src https://formsubmit.co` only). If you add a network call or resource, update the CSP too. The favicon is a data-URI `link` added from JS by `setFavicon()`.
+- v2 shows a dismissible "IT Project Briefing" announcement (`#briefing`, `wireBriefing()`) once the tab has been visible for `BRIEFING_DELAY_MS` (10s). It stops appearing after `BRIEFING_DATE`, so update both the date constant and the `<aside>` text for a new meeting.
 - v2's assignee filter uses `scheduleRender()` (one render per animation frame). Other mutations still call `renderBoard()` directly.
 
 ## Project skills (`.claude/skills/`)
@@ -46,6 +47,11 @@ A single-file IT PMO Kanban board for a **fictitious "Demo Bank"**, used as an i
 - `frontend-design` (anthropics/skills): visual direction. `ui-ux-pro-max` (nextlevelbuilder): UX/accessibility search (`python .claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain ux`). `cybersecurity-analyst` (rysweet/amplihack): threat model and audit commands for this app.
 - Each SKILL.md opens with a "Project overrides: Demo Bank IT PMO Kanban" section that adapts the upstream guidance to the constraints above (no web fonts, no libraries, no persistence, existing `:root` tokens). Those overrides, and this file, win over the upstream text below them.
 - `skills-lock.json` tracks the two installed with `npx skills add`. `cybersecurity-analyst` was copied manually (that repo can't be cloned on Windows), so re-apply the overrides by hand if you update it.
+
+## Project agents (`.claude/agents/`)
+
+- `security-scanner`: scans both pages, the workflow and `.claude/` tooling, classifies findings (severity, OWASP 2021, CWE, boundary B1–B5) and writes a .docx report to `security-reports/` (git-ignored, since it lists unfixed issues). It is read-only on site code and only recommends fixes.
+- The .docx is built by `.claude/scripts/security_report_docx.py` (stdlib only, because python-docx and Node aren't installed) from a findings JSON. The schema is in the script's docstring.
 
 ## FormSubmit gotchas
 

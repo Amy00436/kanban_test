@@ -16,6 +16,7 @@ A single-file IT PMO Kanban board for the fictitious **Demo Bank**, built as a d
 - **Flexbox layout.** The board shows four columns on wide screens, 2×2 on tablets and a single column on phones, with no horizontal scrolling. Touch targets are 44px on phones.
 - **Dark mode toggle.** All colours are CSS custom properties on `:root`, and a dark set replaces them under `[data-theme="dark"]`. The board follows the OS setting until you press **Dark mode** in the header. The choice is held in memory only, like the tasks.
 - **Urgency first.** The Blocked column has its own red, hatched header. Blocked and Overdue summary tiles are flagged when they're above zero. Overdue cards say how late they are ("Overdue by 2 days"), and tasks due within three days show "Due in N days".
+- **Meeting announcement.** After the page has been visible for 10 seconds, a dismissible card in the bottom-left corner announces the next IT Project Briefing (date, time and room). It shows once per page load, is hidden again after the meeting date, and is never stored.
 - **Faster, tighter loading.** A Content Security Policy blocks every external request except FormSubmit. An inline SVG favicon removes the browser's extra `/favicon.ico` request, `color-scheme` stops dark mode flashing white on load, and typing in the assignee filter renders at most once per animation frame.
 
 <details>
@@ -75,6 +76,8 @@ README.md                     This file
 docs/screenshot-v2.png        v2 screenshot used in this README (not deployed)
 docs/screenshot.png           v1 screenshot used in this README (not deployed)
 .claude/skills/               Design, UX and security skills used to build v2
+.claude/agents/               security-scanner agent (writes .docx reports to the git-ignored security-reports/)
+.claude/scripts/              Stdlib-only Python script that builds the security report .docx
 CLAUDE.md                     Constraints and architecture notes for contributors
 .github/workflows/pages.yml   CI checks and GitHub Pages deployment
 .gitignore

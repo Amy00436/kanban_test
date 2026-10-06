@@ -395,6 +395,30 @@
   .toast-warning { border-left-color: var(--toast-warning); }
 
   /* =========================================================
+     Briefing announcement (shown once after 10s on the page;
+     sits below the modal backdrop so it never covers the form)
+     ========================================================= */
+  .briefing {
+    position: fixed; left: var(--space-4); bottom: var(--space-4); z-index: 40;
+    width: 360px; max-width: calc(100vw - 2 * var(--space-4));
+    display: flex; gap: var(--space-3); align-items: flex-start;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-left: 5px solid var(--accent);
+    border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: var(--space-4);
+    animation: toast-in 0.2s var(--ease);
+  }
+  .briefing[hidden] { display: none; }
+  .briefing-icon { flex: none; color: var(--accent); margin-top: 2px; }
+  .briefing-body { flex: 1; min-width: 0; }
+  .briefing-kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); }
+  .briefing h2 { margin: var(--space-1) 0 var(--space-2); font-size: 16px; color: var(--heading); }
+  .briefing dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-3); font-size: 14px; }
+  .briefing dt { font-weight: 600; color: var(--ink-muted); }
+  .briefing dd { margin: 0; }
+  .briefing .icon-btn:hover { color: var(--ink); background: var(--column-bg); }
+
+  /* =========================================================
      Responsive: 2x2 below 1100px, stacked below 768px
      ========================================================= */
   @media (max-width: 1099px) {
@@ -545,6 +569,24 @@
 
 <!-- Toast region (announced politely to screen readers) -->
 <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+
+<!-- ===========================================================
+     Briefing announcement (revealed by wireBriefing after 10s)
+     =========================================================== -->
+<aside class="briefing" id="briefing" role="status" aria-labelledby="briefing-title" hidden>
+  <svg class="briefing-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>
+  </svg>
+  <div class="briefing-body">
+    <p class="briefing-kicker">Upcoming meeting</p>
+    <h2 id="briefing-title">IT Project Briefing</h2>
+    <dl>
+      <dt>When</dt><dd>Wednesday 7 October 2026, 2:00 PM</dd>
+      <dt>Where</dt><dd>Town Hall Meeting Room</dd>
+    </dl>
+  </div>
+  <button type="button" class="icon-btn" id="close-briefing" aria-label="Dismiss IT Project Briefing announcement">&times;</button>
+</aside>
 
 <!-- ===========================================================
      FormSubmit configuration
@@ -1101,6 +1143,47 @@ function wireForm() {
 }
 
 /* ===========================================================
+   Briefing announcement: shown once per page load after the
+   visitor has had the page visible for BRIEFING_DELAY_MS, and
+   only until the meeting date has passed. Nothing is persisted,
+   so it comes back after a refresh.
+   =========================================================== */
+const BRIEFING_DATE = "2026-10-07";
+const BRIEFING_DELAY_MS = 10000;
+
+function wireBriefing() {
+  if (todayISO() > BRIEFING_DATE) return;
+  const briefing = document.getElementById("briefing");
+  let remaining = BRIEFING_DELAY_MS;
+  let startedAt = 0;
+  let timer = null;
+
+  const show = () => {
+    timer = null;
+    document.removeEventListener("visibilitychange", onVisibility);
+    briefing.hidden = false;
+  };
+  const start = () => { startedAt = Date.now(); timer = setTimeout(show, remaining); };
+  // Only count time while the tab is actually visible.
+  function onVisibility() {
+    if (document.hidden && timer) {
+      clearTimeout(timer);
+      timer = null;
+      remaining -= Date.now() - startedAt;
+    } else if (!document.hidden && !timer) {
+      start();
+    }
+  }
+
+  document.getElementById("close-briefing").addEventListener("click", () => { briefing.hidden = true; });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !briefing.hidden && backdrop.hidden) briefing.hidden = true;
+  });
+  document.addEventListener("visibilitychange", onVisibility);
+  if (!document.hidden) start();
+}
+
+/* ===========================================================
    Init
    =========================================================== */
 function init() {
@@ -1110,6 +1193,7 @@ function init() {
   wireFilters();
   wireForm();
   wireBoardEvents();
+  wireBriefing();
   renderBoard();
 }
 

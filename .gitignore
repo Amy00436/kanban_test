@@ -30,3 +30,6 @@ _site/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Security scan reports (list unfixed vulnerabilities; keep out of the public repo)
+security-reports/
