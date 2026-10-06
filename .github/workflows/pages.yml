@@ -1,28 +1,72 @@
-name: Deploy to GitHub Pages
+name: CI and deploy to GitHub Pages
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  check:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: index.html exists and parses
+        run: |
+          test -f index.html || { echo "::error::index.html is missing"; exit 1; }
+          python3 -c "import html.parser; html.parser.HTMLParser().feed(open('index.html', encoding='utf-8').read())"
+
+      - name: No forbidden APIs
+        run: |
+          if grep -nE 'localStorage|sessionStorage|indexedDB|document\.cookie|<script src|<link|!important|alert\(|confirm\(' index.html; then
+            echo "::error file=index.html::Forbidden API or pattern found (see CLAUDE.md)"
+            exit 1
+          fi
+
+      - name: No real-bank branding
+        run: |
+          if grep -niwE 'UOB' index.html; then
+            echo "::error file=index.html::Real bank name found"
+            exit 1
+          fi
+
+      - name: Only the placeholder email address
+        run: |
+          if grep -noE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' index.html | grep -v ':YOUR_EMAIL@example\.com$'; then
+            echo "::error file=index.html::Email address other than YOUR_EMAIL@example.com found"
+            exit 1
+          fi
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Stage site files
+      - name: Stage site files (index.html only)
         run: |
           mkdir _site
           cp index.html _site/
