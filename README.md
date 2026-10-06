@@ -16,7 +16,8 @@ A single-file IT PMO Kanban board for the fictitious **Demo Bank**, built as a d
 - **Flexbox layout.** The board shows four columns on wide screens, 2×2 on tablets and a single column on phones, with no horizontal scrolling. Touch targets are 44px on phones.
 - **Dark mode toggle.** All colours are CSS custom properties on `:root`, and a dark set replaces them under `[data-theme="dark"]`. The board follows the OS setting until you press **Dark mode** in the header. The choice is held in memory only, like the tasks.
 - **Urgency first.** The Blocked column has its own red, hatched header. Blocked and Overdue summary tiles are flagged when they're above zero. Overdue cards say how late they are ("Overdue by 2 days"), and tasks due within three days show "Due in N days".
-- **Meeting announcement.** After the page has been visible for 10 seconds, a dismissible card in the bottom-left corner announces the next IT Project Briefing (date, time and room). It shows once per page load, is hidden again after the meeting date, and is never stored.
+- **Meeting announcement.** After the page has been visible for 10 seconds, a reminder card in the bottom-left corner announces the next IT Project Briefing (date, time and room) until you press **Got it**. It shows once per page load, is hidden again after the meeting date, and is never stored.
+- **WhatsApp chat widget.** A floating button in the bottom-right corner opens an "IT PMO Assistant" panel with suggested questions built from the current board (overdue, blocked and critical counts, the busiest projects). Each one opens WhatsApp in a new tab with the question pre-filled. These are plain `wa.me` links, so no data is sent from the page itself.
 - **Faster, tighter loading.** A Content Security Policy blocks every external request except FormSubmit. An inline SVG favicon removes the browser's extra `/favicon.ico` request, `color-scheme` stops dark mode flashing white on load, and typing in the assignee filter renders at most once per animation frame.
 
 <details>
@@ -67,11 +68,21 @@ When a task is added, the app POSTs it to FormSubmit, which emails it to an addr
 
 > **Do not commit a real email address.** Keep the `YOUR_EMAIL@example.com` placeholder in the repository. The CI check fails if any other address appears in either page.
 
+## WhatsApp chat setup (v2, optional)
+
+The chat widget links to `wa.me/<WHATSAPP_NUMBER>`, set near the top of the script in `v2/index.html`:
+
+```js
+const WHATSAPP_NUMBER = "6512345678";
+```
+
+The committed value is a placeholder. To try it with a real WhatsApp account, change it in your **local copy** only (digits only, country code first, no `+`). As with the email address, don't commit a real phone number.
+
 ## Project structure
 
 ```
 index.html                    v1 app: markup, <style> and <script> (served at /)
-v2/index.html                 v2 app: redesign with dark mode (served at /v2/)
+v2/index.html                 v2 app: redesign with dark mode and chat widget (served at /v2/)
 README.md                     This file
 docs/screenshot-v2.png        v2 screenshot used in this README (not deployed)
 docs/screenshot.png           v1 screenshot used in this README (not deployed)
