@@ -34,6 +34,19 @@ A single-file IT PMO Kanban board for a **fictitious "Demo Bank"**, used as an i
 - Read form fields as `form.elements.<name>`, not `form.<name>`, because names like `title` clash with built-in form properties.
 - Add Task is optimistic: the card is added and the form reset first, then `notifyNewTask()` runs. A failure only shows a warning toast. The modal stays open after a submit, so the "Sending…" button state is visible.
 
+## Versions: v1 (`index.html`) and v2 (`v2/index.html`)
+
+- Both are deployed: v1 at the Pages root, v2 at `/v2/`. **Leave v1 unchanged**; new work goes into `v2/index.html`. Every rule in this file applies to both files, and CI checks both.
+- v2 adds a dark theme: colour tokens on `:root` are redefined under `:root[data-theme="dark"]` and under `@media (prefers-color-scheme: dark)` with `:root:not([data-theme="light"])`. Keep the two dark blocks identical. The toggle choice is `uiState.theme` (in memory only; `null` follows the OS).
+- v2 has a CSP `<meta>` (`connect-src https://formsubmit.co` only). If you add a network call or resource, update the CSP too. The favicon is a data-URI `link` added from JS by `setFavicon()`.
+- v2's assignee filter uses `scheduleRender()` (one render per animation frame). Other mutations still call `renderBoard()` directly.
+
+## Project skills (`.claude/skills/`)
+
+- `frontend-design` (anthropics/skills): visual direction. `ui-ux-pro-max` (nextlevelbuilder): UX/accessibility search (`python .claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain ux`). `cybersecurity-analyst` (rysweet/amplihack): threat model and audit commands for this app.
+- Each SKILL.md opens with a "Project overrides: Demo Bank IT PMO Kanban" section that adapts the upstream guidance to the constraints above (no web fonts, no libraries, no persistence, existing `:root` tokens). Those overrides, and this file, win over the upstream text below them.
+- `skills-lock.json` tracks the two installed with `npx skills add`. `cybersecurity-analyst` was copied manually (that repo can't be cloned on Windows), so re-apply the overrides by hand if you update it.
+
 ## FormSubmit gotchas
 
 - FormSubmit often returns **HTTP 200 with `{"success":"false"}`** for failures, so `notifyNewTask()` checks the `success` field as well as `res.ok`.

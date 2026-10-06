@@ -1,10 +1,29 @@
 # kanban_test: Demo Bank IT PMO Kanban
 
-A single-file IT PMO Kanban board for the fictitious **Demo Bank**, built as a demo and training tool. The whole app (markup, styles and script) lives in one `index.html` written in vanilla HTML, CSS and JavaScript. There are no frameworks, build step or dependencies, and it runs straight from your file system.
+A single-file IT PMO Kanban board for the fictitious **Demo Bank**, built as a demo and training tool. Each version of the app (markup, styles and script) lives in one HTML file written in vanilla HTML, CSS and JavaScript. There are no frameworks, build step or dependencies, and it runs straight from your file system.
 
-**Live demo:** https://amy00436.github.io/kanban_test/
+**Live demos:**
 
-![Demo Bank IT PMO Kanban board showing the Backlog, In Progress, Blocked and Done columns with sample tasks](docs/screenshot.png)
+- **v2 (redesign):** https://amy00436.github.io/kanban_test/v2/
+- **v1 (original):** https://amy00436.github.io/kanban_test/
+
+![Demo Bank IT PMO Kanban board v2 showing the Backlog, In Progress, Blocked and Done columns with sample tasks](docs/screenshot-v2.png)
+
+## What's new in v2
+
+`v2/index.html` is a redesign of the same board. v1 at the site root is kept unchanged.
+
+- **Flexbox layout.** The board shows four columns on wide screens, 2×2 on tablets and a single column on phones, with no horizontal scrolling. Touch targets are 44px on phones.
+- **Dark mode toggle.** All colours are CSS custom properties on `:root`, and a dark set replaces them under `[data-theme="dark"]`. The board follows the OS setting until you press **Dark mode** in the header. The choice is held in memory only, like the tasks.
+- **Urgency first.** The Blocked column has its own red, hatched header. Blocked and Overdue summary tiles are flagged when they're above zero. Overdue cards say how late they are ("Overdue by 2 days"), and tasks due within three days show "Due in N days".
+- **Faster, tighter loading.** A Content Security Policy blocks every external request except FormSubmit. An inline SVG favicon removes the browser's extra `/favicon.ico` request, `color-scheme` stops dark mode flashing white on load, and typing in the assignee filter renders at most once per animation frame.
+
+<details>
+<summary>v1 screenshot</summary>
+
+![Demo Bank IT PMO Kanban board v1](docs/screenshot.png)
+
+</details>
 
 ## Features
 
@@ -23,7 +42,7 @@ A single-file IT PMO Kanban board for the fictitious **Demo Bank**, built as a d
 ## How to run
 
 1. Download or clone this repository.
-2. Double-click `index.html`.
+2. Double-click `v2/index.html` (or `index.html` for v1).
 
 That's all. There's no build, no server and nothing to install.
 
@@ -33,7 +52,7 @@ That's all. There's no build, no server and nothing to install.
 
 When a task is added, the app POSTs it to FormSubmit, which emails it to an address you choose. The card is added right away, and if the email fails you only get a warning toast.
 
-1. In your **local copy** of `index.html`, find the first line of the script:
+1. In your **local copy** of `v2/index.html` (or `index.html`), find the first line of the script:
    ```js
    const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/YOUR_EMAIL@example.com";
    ```
@@ -42,17 +61,20 @@ When a task is added, the app POSTs it to FormSubmit, which emails it to an addr
    ```sh
    python -m http.server
    ```
-   Then open http://localhost:8000/.
+   Then open http://localhost:8000/v2/.
 3. Add a task. The first submission to a new address triggers a **one-time activation email** from FormSubmit. Click its link, and later tasks will be delivered.
 
-> **Do not commit a real email address.** Keep the `YOUR_EMAIL@example.com` placeholder in the repository. The CI check fails if any other address appears in `index.html`.
+> **Do not commit a real email address.** Keep the `YOUR_EMAIL@example.com` placeholder in the repository. The CI check fails if any other address appears in either page.
 
 ## Project structure
 
 ```
-index.html                    The whole app: markup, <style> and <script>
+index.html                    v1 app: markup, <style> and <script> (served at /)
+v2/index.html                 v2 app: redesign with dark mode (served at /v2/)
 README.md                     This file
-docs/screenshot.png           Screenshot used in this README (not deployed)
+docs/screenshot-v2.png        v2 screenshot used in this README (not deployed)
+docs/screenshot.png           v1 screenshot used in this README (not deployed)
+.claude/skills/               Design, UX and security skills used to build v2
 CLAUDE.md                     Constraints and architecture notes for contributors
 .github/workflows/pages.yml   CI checks and GitHub Pages deployment
 .gitignore
@@ -62,15 +84,15 @@ CLAUDE.md                     Constraints and architecture notes for contributor
 
 `.github/workflows/pages.yml` runs on every push and pull request to `main`, and can be started by hand.
 
-The **check** job fails the build if:
+The **check** job runs against both `index.html` and `v2/index.html`, and fails the build if:
 
-- `index.html` uses a forbidden API or pattern: `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, external `<script src>` or `<link>`, `!important`, `alert()` or `confirm()`;
-- `index.html` mentions a real bank's name;
-- `index.html` contains an email address other than `YOUR_EMAIL@example.com`;
-- `index.html` is missing or its HTML does not parse;
+- a page uses a forbidden API or pattern: `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, external `<script src>` or `<link>`, `!important`, `alert()` or `confirm()`;
+- a page mentions a real bank's name;
+- a page contains an email address other than `YOUR_EMAIL@example.com`;
+- a page is missing or its HTML does not parse;
 - [gitleaks](https://github.com/gitleaks/gitleaks) finds a secret anywhere in the git history.
 
-The **deploy** job runs only after the checks pass, on pushes to `main` (and on manual runs). It publishes **only `index.html`** to GitHub Pages, so nothing else in the repository is put on the site.
+The **deploy** job runs only after the checks pass, on pushes to `main` (and on manual runs). It publishes **only `index.html` and `v2/index.html`** to GitHub Pages, so nothing else in the repository is put on the site.
 
 ## Disclaimer
 

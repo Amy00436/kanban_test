@@ -26,3 +26,7 @@ Desktop.ini
 # Local test output
 _site/
 .playwright-mcp/
+
+# Python bytecode
+__pycache__/
+*.pyc
