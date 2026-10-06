@@ -4,6 +4,8 @@ A single-file IT PMO Kanban board for the fictitious **Demo Bank**, built as a d
 
 **Live demo:** https://amy00436.github.io/kanban_test/
 
+![Demo Bank IT PMO Kanban board showing the Backlog, In Progress, Blocked and Done columns with sample tasks](docs/screenshot.png)
+
 ## Features
 
 - **Four columns:** Backlog, In Progress, Blocked and Done, each with a task count.
@@ -50,6 +52,7 @@ When a task is added, the app POSTs it to FormSubmit, which emails it to an addr
 ```
 index.html                    The whole app: markup, <style> and <script>
 README.md                     This file
+docs/screenshot.png           Screenshot used in this README (not deployed)
 CLAUDE.md                     Constraints and architecture notes for contributors
 .github/workflows/pages.yml   CI checks and GitHub Pages deployment
 .gitignore

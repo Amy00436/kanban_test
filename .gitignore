@@ -25,3 +25,4 @@ Desktop.ini
 
 # Local test output
 _site/
+.playwright-mcp/

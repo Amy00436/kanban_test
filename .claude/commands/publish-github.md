@@ -1,7 +1,7 @@
 ---
 description: Security-scan, document, push this project to GitHub, deploy GitHub Pages with CI/CD, and fill in the repo About section
 argument-hint: <github-repo-url>  e.g. https://github.com/owner/repo
-allowed-tools: Bash, PowerShell, Read, Write, Edit, Glob, Grep, WebFetch
+allowed-tools: Bash, PowerShell, Read, Write, Edit, Glob, Grep, WebFetch, mcp__playwright__browser_navigate, mcp__playwright__browser_resize, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_close
 ---
 
 # Publish this project to GitHub
@@ -32,9 +32,24 @@ Read `index.html` and `CLAUDE.md`, then write `README.md` for someone landing on
 - How to run: download and double-click `index.html`; no build, no server, no dependencies.
 - A note that state is in memory only and a refresh resets the board, on purpose.
 - Email notification setup: replace `YOUR_EMAIL@example.com` in `FORMSUBMIT_ENDPOINT` locally, serve over http (`python -m http.server`) because file:// fails, and click FormSubmit's one-time activation email. Say clearly not to commit a real address.
-- Project structure, CI/CD (what the workflow checks and that `main` deploys to Pages), and a disclaimer that Demo Bank is fictitious and not affiliated with any real bank.
+- A screenshot of the board right under the live demo link: `![Demo Bank IT PMO Kanban board ...](docs/screenshot.png)` (see step 1a).
+- Project structure (including `docs/screenshot.png`), CI/CD (what the workflow checks and that `main` deploys to Pages), and a disclaimer that Demo Bank is fictitious and not affiliated with any real bank.
 
 Do not put real email addresses, tokens, names of real banks, or internal URLs in the README.
+
+## 1a. Capture the README screenshot (Playwright MCP)
+
+Use the Playwright MCP tools to save a fresh screenshot to `docs/screenshot.png`:
+
+1. Pick the URL. Playwright MCP blocks `file://`, so:
+   - if the live Pages site (`https://OWNER.github.io/REPO/`) returns HTTP 200 **and** the local `index.html` has no uncommitted changes, use it;
+   - otherwise serve the folder locally in the background (`python -m http.server 8765`) and use `http://localhost:8765/index.html`. Stop the server when done.
+2. `browser_resize` to 1400×1000, then `browser_navigate` to the URL.
+3. `browser_take_screenshot` with `filename: "docs/screenshot.png"`, `type: "png"`, `scale: "css"` (viewport only, not full page). Then `browser_close`.
+4. Open the PNG with Read and check it shows the header, summary strip, filters and all four columns with seed cards. Retake if it is blank or cut off. Ignore a favicon 404 in the console.
+5. Make sure `.playwright-mcp/` (the MCP's log/snapshot folder) is in `.gitignore`, and never commit it.
+
+If the Playwright MCP is not available, skip this step, keep any existing `docs/screenshot.png`, and say so in the final report. The screenshot is for the README only; the deploy job still publishes only `index.html`.
 
 ## 2. Create or update the CI/CD workflow
 
@@ -63,11 +78,11 @@ Look for:
 - Sensitive files: `.env*`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `id_rsa*`, `*.sqlite`, `*.db`, `credentials*`, `secrets*`, `.claude/settings.local.json`, and any memory/transcript files.
 - Personal data: any email address except `YOUR_EMAIL@example.com`, `noreply@anthropic.com` (commit trailers), and GitHub `users.noreply.github.com` addresses. Also phone numbers and IDs that look real.
 - Project-specific rules: no `UOB` or other real bank names/logos, and `FORMSUBMIT_ENDPOINT` still uses the placeholder.
-- Large or binary files that don't belong in a single-file HTML project.
+- Large or binary files that don't belong in a single-file HTML project. `docs/screenshot.png` from step 1a is expected; view it and check it shows only the Demo Bank seed data before allowing it.
 
 If `gitleaks` or `trufflehog` is installed locally, also run it (`gitleaks detect --source . --log-opts="--all"`), but don't rely on it alone.
 
-Create or update `.gitignore` so it covers `.env*`, key files, `.claude/settings.local.json`, OS junk (`Thumbs.db`, `.DS_Store`) and editor folders.
+Create or update `.gitignore` so it covers `.env*`, key files, `.claude/settings.local.json`, `.playwright-mcp/`, OS junk (`Thumbs.db`, `.DS_Store`) and editor folders.
 
 **If anything is found:** stop. Report each finding with file, line and the reason, with the secret masked (show at most the first 4 characters). Do not push. For problems in the working tree, propose the fix. For problems in git history, explain that the history has to be rewritten (e.g. `git filter-repo`) and that the secret must be rotated, and only do this if the user explicitly agrees, because it is destructive. Continue only once the scan is clean or the user has explicitly accepted each remaining finding.
 
